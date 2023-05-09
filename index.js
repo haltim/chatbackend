@@ -1,16 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const authRoutes = require("./routes/auth");
-const app = express();
+const bodyParser = require('body-parser')
 require("dotenv").config();
 
-app.use(cors());
-app.use(express.json());
+const app = express()
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(cors())
 
 mongoose
   .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
@@ -20,8 +20,58 @@ mongoose
     console.log(err.message);
   });
 
-app.use("/api/auth", authRoutes);
+const userSchema = new mongoose.Schema({
+  username: String,
+  email: String,
+  password: String
+})
+const User = new mongoose.model("User", userSchema)
+// Route
 
-const server = app.listen(process.env.PORT, () =>
-  console.log(`Server started on ${process.env.PORT}`)
-);
+app.get("/", (req, res) => {
+  res.send("My app")
+})
+// post 
+app.post("/login", (req, res) => {
+  const { email, password } = req.body
+  User.findOne({ email: email }, (err, user) => {
+    if (user) {
+      if (password === user.password) {
+        res.send({ massage: "login successfull", user: user })
+      } else {
+        res.send({ massage: "password did't match" })
+      }
+
+    } else {
+      res.send({ massage: "User not registered" })
+    }
+  })
+
+})
+
+app.post("/register", (req, res) => {
+  const { username, email, password } = req.body
+  User.findOne({ email: email }, (err, user) => {
+    if (user) {
+      res.send({ massage: "Already Registerd" })
+    } else {
+      const user = new User({
+        username,
+        email,
+        password
+      })
+      user.save(err => {
+        if (err) {
+          res.send(err)
+        } else {
+          res.send({ message: "Successfully Registered ->Please login!!" })
+        }
+      })
+    }
+  })
+
+})
+
+app.listen(8000, () => {
+  console.log("DB successfully started on port 8000")
+})
