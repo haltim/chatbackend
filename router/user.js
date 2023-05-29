@@ -134,7 +134,7 @@ router.post(
           expiresIn: 3600,
         },
         (err, token) => {
-          if (err) throw err;
+          if (err) throw err.message;
           res.status(200).json({
             token,
           });
@@ -149,8 +149,63 @@ router.post(
 
 // ...
 
+router.post(
+  "/:userId/get-user-id",
+  [
+    check('email', 'Please enter a valid email').isEmail(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        errors: errors.array(),
+      });
+    }
+
+    const { email } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+      if (!user) {
+        return res.status(400).json({
+          msg: 'User Not Registered',
+        });
+      }
+
+
+      res.status(200).json({
+        userId: user.id, // Include the user ID in the response
+      });
+      
+      const payload = {
+        user: {
+          id: user.id,
+        },
+      };
+
+      jwt.sign(
+        payload,
+        "randomString",
+        {
+          expiresIn: 3600,
+        },
+        (err, token) => {
+          if (err) throw err;
+          res.status(200).json({
+            token,
+          });
+        }
+      );
+    } catch (err) {
+      console.log(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
+
+
 router.put(
-  "/change-password",
+  "/:userId/change-password",
   [
     check("password", "Please enter a valid password").isLength({
       min: 6,
@@ -216,7 +271,7 @@ router.put(
   
 );
 
-router.delete("/delete-account", async (req, res) => {
+router.delete("/:userId/delete-account", async (req, res) => {
   const email = req.body.email;
 
   try {
