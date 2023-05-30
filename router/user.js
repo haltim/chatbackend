@@ -150,7 +150,7 @@ router.post(
 // ...
 
 router.post(
-  "/:userId/get-user-id",
+  "/get-user-id",
   [
     check('email', 'Please enter a valid email').isEmail(),
   ],
@@ -205,7 +205,7 @@ router.post(
 
 
 router.put(
-  "/:userId/change-password",
+  "/change-password",
   [
     check("password", "Please enter a valid password").isLength({
       min: 6,
@@ -271,7 +271,7 @@ router.put(
   
 );
 
-router.delete("/:userId/delete-account", async (req, res) => {
+router.delete("/delete-account", async (req, res) => {
   const email = req.body.email;
 
   try {
