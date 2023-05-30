@@ -219,14 +219,13 @@ router.put(
       });
     }
 
+    const userId = req.user.id; // Retrieve user ID from the authenticated request
+
     const body = req.body;
-    const email = body.email;
     const password = body.password;
 
     try {
-      let user = await User.findOne({
-        email,
-      });
+      let user = await User.findById(userId);
       if (!user) {
         return res.status(400).json({
           msg: "User Not Found",
@@ -241,42 +240,20 @@ router.put(
       res.status(200).json({
         msg: "Password Changed Successfully",
       });
-
-      const payload = {
-        user: {
-          id: user.id,
-        },
-      };
-
-      jwt.sign(
-        payload,
-        "randomString",
-        {
-          expiresIn: 3600,
-        },
-        (err, token) => {
-          if (err) throw err;
-          res.status(200).json({
-            token,
-          });
-        }
-      );
     } catch (err) {
       console.log(err.message);
       res.status(500).send("Server Error");
     }
   }
-  
-  
-  
 );
 
 router.delete("/delete-account", async (req, res) => {
-  const email = req.body.email;
+
+  const userId = req.user.id;
 
   try {
     let user = await User.findOne({
-      email,
+      email, userId
     });
     if (!user) {
       return res.status(400).json({
