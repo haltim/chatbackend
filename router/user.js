@@ -115,17 +115,8 @@ router.put(
   ]),
   async (req, res) => {
     try {
-      const { password } = req.body;
-      const token = req.headers.authorization;
-      if (!token) {
-        return res.status(401).json({ msg: "No token provided" });
-      }
+      const { userId, password } = req.body;
 
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET_KEY || "your-secret-key"
-      );
-      const userId = decoded.user.id;
 
       let user = await User.findById(userId);
       if (!user) {
@@ -149,18 +140,17 @@ router.put(
 // Delete account route
 router.delete("/delete-account", async (req, res) => {
   try {
-    const userId = req.user.id;
-    let user = await User.findByIdAndRemove(userId);
-    if (!user) {
-      return res.status(400).json({ msg: "User Not Found" });
-    }
+    // Retrieve user ID from request body
+    const { userId } = req.body;
 
-    res.status(200).json({ msg: "Account Deleted Successfully" });
-  } catch (err) {
-    console.log(err.message);
-    res.status(500).send("Server Error");
+    // Find and delete the user
+    await User.findByIdAndDelete(userId);
+
+    return res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
-
 // Export the router
 module.exports = router;
