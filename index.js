@@ -13,7 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // PORT
-const PORT = 4000;
+const PORT = 5000;
 
 app.get("/", (req, res) => {
   res.json({ message: "API Working" });
