@@ -1,10 +1,7 @@
 const express = require("express");
-const passport = require("passport");
 const { check, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
 const User = require("../modal/User");
 const router = express.Router();
 
