@@ -1,12 +1,10 @@
 const mongoose = require("mongoose")
-
-
-const MongoUrl = "mongodb+srv://jk:jk@jk.nm4gj3c.mongodb.net/?retryWrites=true&w=majority"
+require('dotenv').config()
 
 
 const InitiateMongoServer = async ()=>{
     try{
-        await mongoose.connect(MongoUrl,{
+        await mongoose.connect(process.env.MONGO_URL,{
             useNewUrlParser:true
         });
         console.log("connected to db")

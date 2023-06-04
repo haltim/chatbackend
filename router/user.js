@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../modal/User");
 const router = express.Router();
+require('dotenv').config()
 
 // Middleware
 router.use(express.json());
@@ -31,14 +32,15 @@ router.post(
     check("password", "Please enter a valid password").isLength({ min: 6 }),
   ]),
   async (req, res) => {
+    console.log(req.body)
     try {
       const { username, email, password } = req.body;
 
       let user = await User.findOne({ email });
+      
       if (user) {
         return res.status(400).json({ msg: "User Already Exists" });
       }
-
       user = new User({ username, email, password });
 
       const salt = await bcrypt.genSalt(10);
@@ -47,7 +49,7 @@ router.post(
       await user.save();
 
       const payload = { user: { id: user.id } };
-      const secretKey = process.env.JWT_SECRET_KEY || "abc123";
+      const secretKey = process.env.JWT_SECRET_KEY;
       jwt.sign(
         payload,
         secretKey,
@@ -86,7 +88,7 @@ router.post(
         return res.status(401).json({ msg: "Incorrect Password" });
       }
       const payload = { user: { id: user.id } };
-      const secretKey = process.env.JWT_SECRET_KEY || "abc123";
+      const secretKey = process.env.JWT_SECRET_KEY;
       jwt.sign(
         payload,
         secretKey,
