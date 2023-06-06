@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../modal/User");
 const router = express.Router();
+require('dotenv').config()
 
 // Middleware
 router.use(express.json());
@@ -35,10 +36,10 @@ router.post(
       const { username, email, password } = req.body;
 
       let user = await User.findOne({ email });
+      
       if (user) {
         return res.status(400).json({ msg: "User Already Exists" });
       }
-
       user = new User({ username, email, password });
 
       const salt = await bcrypt.genSalt(10);
@@ -47,7 +48,7 @@ router.post(
       await user.save();
 
       const payload = { user: { id: user.id } };
-      const secretKey = process.env.JWT_SECRET_KEY || "abc123";
+      const secretKey = process.env.JWT_SECRET_KEY;
       jwt.sign(
         payload,
         secretKey,
@@ -86,7 +87,7 @@ router.post(
         return res.status(401).json({ msg: "Incorrect Password" });
       }
       const payload = { user: { id: user.id } };
-      const secretKey = process.env.JWT_SECRET_KEY || "abc123";
+      const secretKey = process.env.JWT_SECRET_KEY;
       jwt.sign(
         payload,
         secretKey,
@@ -96,6 +97,27 @@ router.post(
           res.status(200).json({ token });
         }
       );
+    } catch (err) {
+      console.log(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
+// Forgot password route
+router.put(
+  "/forgot-password",
+  validate([]),
+  async (req, res) => {
+    try {
+      const { email } = req.body;
+      let user = await User.findOne({"email" : {$eq : email}})
+      
+      if (!user) {
+        return res.status(400).json({ msg: "User Not Found" });
+      }
+
+      res.status(200).json({ msg: "User found. Sent an email" });
     } catch (err) {
       console.log(err.message);
       res.status(500).send("Server Error");
@@ -113,18 +135,17 @@ router.put(
   async (req, res) => {
     try {
       const { userId, password } = req.body;
-
-
-      let user = await User.findById(userId);
+      let user = await User.findById(userId)
+      
       if (!user) {
         return res.status(400).json({ msg: "User Not Found" });
       }
 
+     
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
       user.password = passwordHash;
-
-      await user.save();
+      await user.save()
 
       res.status(200).json({ msg: "Password Changed Successfully" });
     } catch (err) {
@@ -139,6 +160,7 @@ router.delete("/delete-account", async (req, res) => {
   try {
     // Retrieve user ID from request body
     const { userId } = req.body;
+    console.log(req.body)
 
     // Find and delete the user
     await User.findByIdAndDelete(userId);

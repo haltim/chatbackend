@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const InitiateMongoServer = require("./config/db");
 const user = require("./router/user");
 const cors = require("cors");
+require('dotenv').config()
 
 InitiateMongoServer();
 
@@ -12,8 +13,6 @@ app.use(cors());
 // middleware
 app.use(bodyParser.json());
 
-// PORT
-const PORT = 5000;
 
 app.get("/", (req, res) => {
   res.json({ message: "API Working" });
@@ -23,6 +22,6 @@ app.get("/", (req, res) => {
 
 app.use("/user", user);
 
-app.listen(PORT, (req, res) => {
-  console.log(`Server Started at PORT ${PORT}`);
+app.listen(process.env.PORT, (req, res) => {
+  console.log(`Server Started at PORT ${process.env.PORT}`);
 });
